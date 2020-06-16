@@ -1,16 +1,15 @@
 package main
 
 import (
-	"github.com/archa347/modulus/command/scheduler"
+	"github.com/archa347/modulus/cmd"
+	log "github.com/sirupsen/logrus"
 	"os"
 )
 
 func main() {
-	os.Exit(runCommand())
-}
-
-func runCommand() int {
-	scheduler.Run(os.Args[1:])
-
-	return 0
+	err := cmd.Execute()
+	if err != nil {
+		log.Errorf("Error %s", err.Error())
+		os.Exit(1)
+	}
 }

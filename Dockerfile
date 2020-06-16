@@ -1,9 +1,18 @@
-FROM golang:1.13.3-alpine3.10 AS build
+FROM golang:1.14-alpine3.11 AS build
+FROM alpine:3.11 AS base
+# ================= BUILD ==================
+FROM build AS builder
 ARG PROJECT_BUILD_DIR=src/github.com/archa347/modulus
-ARG DEP_INSTALL_SCRIPT=https://raw.githubusercontent.com/golang/dep/master/install.sh
-RUN apk --update --no-cache add git
-RUN wget -qO - ${DEP_INSTALL_SCRIPT} | sh
 WORKDIR $GOPATH/$PROJECT_BUILD_DIR
 COPY . .
-RUN dep ensure
-RUN go build .
+RUN go build -o /build/modulus main.go
+
+# ================== APP ===================
+FROM base AS app
+RUN addgroup -S app && adduser -S app -G app
+USER app
+WORKDIR app
+
+COPY --from=builder --chown=app:app /build/modulus /app/modulus
+
+ENTRYPOINT ["/app/modulus", "demo"]
